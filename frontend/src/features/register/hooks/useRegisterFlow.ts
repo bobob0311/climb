@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import useApiMutation from '../../../hooks/useApiMutation';
-import { shouldUseMockData } from '../../../mocks/mockApi';
 import { REGISTER_MESSAGES } from '../constants/registerMessages';
 import useRegisterForm from './useRegisterForm';
 
-import {
-    checkLoginId,
-    checkNickname,
-    getMockedSuccessMessage,
-} from '../services/registerService';
+import { checkLoginId, checkNickname } from '../services/registerService';
 
 import { validateRegisterInput } from '../utils/registerValidation';
 import type { SignUpRequest, SignUpResponse } from '../types/register.types';
@@ -65,14 +60,8 @@ export default function useRegisterFlow(onSignUpSuccess: () => void) {
         const { loginId } = getFormValues();
 
         try {
-            if (shouldUseMockData()) {
-                setModalMessage(getMockedSuccessMessage('loginId'));
-                markConfirmedId(loginId);
-                return;
-            }
-
-            await checkLoginId(loginId);
-            setModalMessage(REGISTER_MESSAGES.loginIdAvailable);
+            const successMessage = await checkLoginId(loginId);
+            setModalMessage(successMessage);
             markConfirmedId(loginId);
         } catch (error) {
             setModalMessage((error as Error).message);
@@ -83,14 +72,8 @@ export default function useRegisterFlow(onSignUpSuccess: () => void) {
         const { nickname } = getFormValues();
 
         try {
-            if (shouldUseMockData()) {
-                setModalMessage(getMockedSuccessMessage('nickname'));
-                markConfirmedNickname(nickname);
-                return;
-            }
-
-            await checkNickname(nickname);
-            setModalMessage(REGISTER_MESSAGES.nicknameAvailable);
+            const successMessage = await checkNickname(nickname);
+            setModalMessage(successMessage);
             markConfirmedNickname(nickname);
         } catch (error) {
             setModalMessage((error as Error).message);

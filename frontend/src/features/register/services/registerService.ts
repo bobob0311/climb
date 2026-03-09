@@ -14,8 +14,8 @@ async function parseErrorMessage(res: Response) {
     }
 }
 
-export async function checkLoginId(loginId: string): Promise<void> {
-    if (shouldUseMockData()) return;
+export async function checkLoginId(loginId: string): Promise<string> {
+    if (shouldUseMockData()) return REGISTER_MESSAGES.loginIdAvailable;
 
     const res = await fetch(
         `${API_BASE_URL}/user/login-id?loginId=${encodeURIComponent(loginId)}`,
@@ -24,10 +24,11 @@ export async function checkLoginId(loginId: string): Promise<void> {
     if (!res.ok) {
         throw new Error(await parseErrorMessage(res));
     }
+    return REGISTER_MESSAGES.loginIdAvailable;
 }
 
-export async function checkNickname(nickname: string): Promise<void> {
-    if (shouldUseMockData()) return;
+export async function checkNickname(nickname: string): Promise<string> {
+    if (shouldUseMockData()) return REGISTER_MESSAGES.nicknameAvailable;
 
     const res = await fetch(
         `${API_BASE_URL}/user/nickname?nickname=${encodeURIComponent(nickname)}`,
@@ -36,10 +37,5 @@ export async function checkNickname(nickname: string): Promise<void> {
     if (!res.ok) {
         throw new Error(await parseErrorMessage(res));
     }
-}
-
-export function getMockedSuccessMessage(type: 'loginId' | 'nickname') {
-    return type === 'loginId'
-        ? REGISTER_MESSAGES.loginIdAvailable
-        : REGISTER_MESSAGES.nicknameAvailable;
+    return REGISTER_MESSAGES.nicknameAvailable;
 }
