@@ -1,52 +1,52 @@
-name: Front Build & Deploy
+# name: Front Build & Deploy
 
-on:
-  push:
-    branches: [ main, dev, fe-dev ]
+# on:
+#   push:
+#     branches: [ main, dev, fe-dev ]
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-env:
-  VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+# env:
+#   VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   build-deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: ⬇️ Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: ⬇️ Checkout code
+#         uses: actions/checkout@v4
 
-      - name: 🛠 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+#       - name: 🛠 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 20
 
-      - name: 📦 Install dependencies and 🔨 Build
-        working-directory: frontend
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-        run: |
-          echo "📦 Installing dependencies..."
-          npm ci
+#       - name: 📦 Install dependencies and 🔨 Build
+#         working-directory: frontend
+#         env:
+#           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+#         run: |
+#           echo "📦 Installing dependencies..."
+#           npm ci
 
-          echo "🔨 Building React app..."
-          npm run build
+#           echo "🔨 Building React app..."
+#           npm run build
 
-      - name: 🔐 Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.OIDC_ROLE }}
-          aws-region: ap-northeast-2
+#       - name: 🔐 Configure AWS credentials (OIDC)
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: ${{ secrets.OIDC_ROLE }}
+#           aws-region: ap-northeast-2
 
-      - name: 🚀 Deploy to S3
-        working-directory: frontend
-        run: |
-          echo "🚀 Uploading to S3..."
-          aws s3 sync dist/ s3://${{secrets.AWS_FE_BUCKET_NAME}} --delete
+#       - name: 🚀 Deploy to S3
+#         working-directory: frontend
+#         run: |
+#           echo "🚀 Uploading to S3..."
+#           aws s3 sync dist/ s3://${{secrets.AWS_FE_BUCKET_NAME}} --delete
 
-      - name: 🧹 Invalidate CloudFront
-        run: |
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CF_DIST_ID }} --paths "/*"
+#       - name: 🧹 Invalidate CloudFront
+#         run: |
+#           aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CF_DIST_ID }} --paths "/*"

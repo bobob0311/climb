@@ -1,119 +1,119 @@
-name: Backend CD
+# name: Backend CD
 
-on:
-  push:
-    branches:
-      - dev
+# on:
+#   push:
+#     branches:
+#       - dev
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        svc: [api-server, batch-server]
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         svc: [api-server, batch-server]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      # 1. JDK 설정
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'gradle'
+#       # 1. JDK 설정
+#       - name: Set up JDK 17
+#         uses: actions/setup-java@v4
+#         with:
+#           java-version: '17'
+#           distribution: 'temurin'
+#           cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./backend/gradlew
+#       - name: Grant execute permission for gradlew
+#         run: chmod +x ./backend/gradlew
 
-      - name: Build ${{ matrix.svc }} with Gradle
-        working-directory: ./backend
-        run: ./gradlew :application-modules:${{ matrix.svc }}:build -x test
+#       - name: Build ${{ matrix.svc }} with Gradle
+#         working-directory: ./backend
+#         run: ./gradlew :application-modules:${{ matrix.svc }}:build -x test
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ secrets.AWS_BUCKET_REGION }}
-          role-to-assume: ${{ secrets.OIDC_ROLE }}
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-region: ${{ secrets.AWS_BUCKET_REGION }}
+#           role-to-assume: ${{ secrets.OIDC_ROLE }}
 
-      - name: Upload JAR to S3
-        run: |
-          # build/libs/ 경로에서 *-plain.jar가 아닌 실행 가능한 JAR 파일 찾기
-          JAR_FILE=$(find ./backend/application-modules/${{ matrix.svc }}/build/libs -name "*.jar" ! -name "*-plain.jar")
-          
-          # S3에 업로드 (서비스 이름.jar 로 통일하여 업로드)
-          aws s3 cp $JAR_FILE \
-            s3://${{ secrets.AWS_BE_BUCKET_NAME }}/artifacts/${{ github.sha }}/${{ matrix.svc }}.jar \
-            --storage-class STANDARD_IA
+#       - name: Upload JAR to S3
+#         run: |
+#           # build/libs/ 경로에서 *-plain.jar가 아닌 실행 가능한 JAR 파일 찾기
+#           JAR_FILE=$(find ./backend/application-modules/${{ matrix.svc }}/build/libs -name "*.jar" ! -name "*-plain.jar")
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
+#           # S3에 업로드 (서비스 이름.jar 로 통일하여 업로드)
+#           aws s3 cp $JAR_FILE \
+#             s3://${{ secrets.AWS_BE_BUCKET_NAME }}/artifacts/${{ github.sha }}/${{ matrix.svc }}.jar \
+#             --storage-class STANDARD_IA
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#   deploy:
+#     needs: build
+#     runs-on: ubuntu-latest
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ secrets.AWS_BUCKET_REGION }}
-          role-to-assume: ${{ secrets.OIDC_ROLE }}
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Create deployment package
-        working-directory: ./backend
-        run: |
-          mkdir -p deploy/scripts
-          cp -r scripts/deploy/* deploy/
-          cp appspec.yml deploy/
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-region: ${{ secrets.AWS_BUCKET_REGION }}
+#           role-to-assume: ${{ secrets.OIDC_ROLE }}
 
-          cat > deploy/.env <<EOF
-          export ARTIFACT_VERSION=${GITHUB_SHA}
-          export S3_DEPLOY_BUCKET=${{ secrets.AWS_BE_BUCKET_NAME }}
-          export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+#       - name: Create deployment package
+#         working-directory: ./backend
+#         run: |
+#           mkdir -p deploy/scripts
+#           cp -r scripts/deploy/* deploy/
+#           cp appspec.yml deploy/
 
-          export DB_HOST=${{ secrets.DB_HOST }}
-          export DB_PORT=3306
-          export DB_NAME=${{ secrets.DB_NAME }}
-          export DB_USER=${{ secrets.DB_USER }}
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+#           cat > deploy/.env <<EOF
+#           export ARTIFACT_VERSION=${GITHUB_SHA}
+#           export S3_DEPLOY_BUCKET=${{ secrets.AWS_BE_BUCKET_NAME }}
+#           export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
 
-          export REDIS_HOST=${{ secrets.REDIS_HOST }}
-          export REDIS_PORT=${{ secrets.REDIS_PORT }}
-          export REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
-          export REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+#           export DB_HOST=${{ secrets.DB_HOST }}
+#           export DB_PORT=3306
+#           export DB_NAME=${{ secrets.DB_NAME }}
+#           export DB_USER=${{ secrets.DB_USER }}
+#           export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
 
-          export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          export JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }}
+#           export REDIS_HOST=${{ secrets.REDIS_HOST }}
+#           export REDIS_PORT=${{ secrets.REDIS_PORT }}
+#           export REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}
+#           export REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
 
-          export KMA_API_KEY_MOUNTAIN=${{ secrets.KMA_API_KEY_MOUNTAIN }}
-          export KMA_API_KEY_SHORT=${{ secrets.KMA_API_KEY_SHORT }}
-          export KMA_API_KEY_ULTRA=${{ secrets.KMA_API_KEY_ULTRA }}
-          EOF
+#           export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+#           export JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }}
 
-          # 실행 권한 부여
-          chmod 755 deploy/*.sh
+#           export KMA_API_KEY_MOUNTAIN=${{ secrets.KMA_API_KEY_MOUNTAIN }}
+#           export KMA_API_KEY_SHORT=${{ secrets.KMA_API_KEY_SHORT }}
+#           export KMA_API_KEY_ULTRA=${{ secrets.KMA_API_KEY_ULTRA }}
+#           EOF
 
-          # 패키징
-          cd deploy && zip -r ../deploy.zip .
+#           # 실행 권한 부여
+#           chmod 755 deploy/*.sh
 
-      - name: Upload deployment package to S3
-        working-directory: ./backend
-        run: |
-          aws s3 cp deploy.zip \
-            s3://${{ secrets.AWS_BE_BUCKET_NAME }}/deployments/backend-${GITHUB_SHA}.zip
+#           # 패키징
+#           cd deploy && zip -r ../deploy.zip .
 
-      - name: Create CodeDeploy deployment
-        run: |
-          aws deploy create-deployment \
-            --application-name ${{ secrets.CODEDEPLOY_APPLICATION }} \
-            --deployment-group-name ${{ secrets.CODEDEPLOY_GROUP }} \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --s3-location bucket=${{ secrets.AWS_BE_BUCKET_NAME }},key=deployments/backend-${GITHUB_SHA}.zip,bundleType=zip \
-            --description "Deployment of commit ${GITHUB_SHA}" \
-            --ignore-application-stop-failures
+#       - name: Upload deployment package to S3
+#         working-directory: ./backend
+#         run: |
+#           aws s3 cp deploy.zip \
+#             s3://${{ secrets.AWS_BE_BUCKET_NAME }}/deployments/backend-${GITHUB_SHA}.zip
+
+#       - name: Create CodeDeploy deployment
+#         run: |
+#           aws deploy create-deployment \
+#             --application-name ${{ secrets.CODEDEPLOY_APPLICATION }} \
+#             --deployment-group-name ${{ secrets.CODEDEPLOY_GROUP }} \
+#             --deployment-config-name CodeDeployDefault.AllAtOnce \
+#             --s3-location bucket=${{ secrets.AWS_BE_BUCKET_NAME }},key=deployments/backend-${GITHUB_SHA}.zip,bundleType=zip \
+#             --description "Deployment of commit ${GITHUB_SHA}" \
+#             --ignore-application-stop-failures
