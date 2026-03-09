@@ -5,6 +5,7 @@ import {
     type UseMutationOptions,
     type UseMutationResult,
 } from '@tanstack/react-query';
+import { getMockResponse, shouldUseMockData } from '../mocks/mockApi';
 
 type Method = 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -19,6 +20,10 @@ export default function useApiMutation<TRequest = any, TResponse = any>(
     prams?: Record<string, any>,
 ): UseMutationResult<TResponse | string, Error, TRequest> {
     const mutationFn = async (body: TRequest): Promise<TResponse | string> => {
+        if (shouldUseMockData()) {
+            return getMockResponse(url, method, prams) as TResponse | string;
+        }
+
         const token = getToken();
         const isFormData = body instanceof FormData;
         const queryString =
@@ -38,28 +43,34 @@ export default function useApiMutation<TRequest = any, TResponse = any>(
                   ...(token ? { Authorization: `Bearer ${token}` } : {}),
               };
 
-        const res = await fetch(`${API_BASE_URL}${url}${queryString}`, {
-            method,
-            headers,
-            body: isFormData ? body : JSON.stringify(body),
-        });
-
-        const text = await res.text();
-
-        if (!res.ok) {
-            let errorMessage = 'API 요청 실패';
-            try {
-                const errorData = JSON.parse(text);
-                errorMessage = errorData.message || errorMessage;
-            } catch {
-                errorMessage = text || errorMessage;
-            }
-            throw new Error(errorMessage);
-        }
         try {
-            return JSON.parse(text);
-        } catch {
-            return text;
+            const res = await fetch(`${API_BASE_URL}${url}${queryString}`, {
+                method,
+                headers,
+                body: isFormData ? body : JSON.stringify(body),
+            });
+
+            const text = await res.text();
+
+            if (!res.ok) {
+                let errorMessage = 'API 요청 실패';
+                try {
+                    const errorData = JSON.parse(text);
+                    errorMessage = errorData.message || errorMessage;
+                } catch {
+                    errorMessage = text || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+            try {
+                return JSON.parse(text);
+            } catch {
+                return text;
+            }
+        } catch (error) {
+            const mockResponse = getMockResponse(url, method, prams);
+            if (mockResponse != null) return mockResponse as TResponse | string;
+            throw error;
         }
     };
 

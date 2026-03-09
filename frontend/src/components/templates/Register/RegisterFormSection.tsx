@@ -7,6 +7,7 @@ import { validateRegisterInput } from './utils.ts';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
 import PendingModal from '../../molecules/Modal/ReportPendingModal.tsx';
+import { shouldUseMockData } from '../../../mocks/mockApi.ts';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface SignUpRequest {
@@ -78,6 +79,12 @@ export default function RegisterFormSection() {
     const clickCheckIdHandler = async () => {
         const loginId = idRef.current?.value ?? '';
 
+        if (shouldUseMockData()) {
+            setModalMessage('id가 중복되지 않습니다.');
+            confirmedIdRef.current = loginId;
+            return;
+        }
+
         try {
             const res = await fetch(
                 `${API_BASE_URL}/user/login-id?loginId=${encodeURIComponent(loginId)}`,
@@ -103,6 +110,12 @@ export default function RegisterFormSection() {
 
     const clickCheckNicknameHandler = async () => {
         const nickname = nicknameRef.current?.value ?? '';
+
+        if (shouldUseMockData()) {
+            setModalMessage('닉네임이 중복되지 않습니다.');
+            confirmedNicknameRef.current = nickname;
+            return;
+        }
 
         try {
             const res = await fetch(

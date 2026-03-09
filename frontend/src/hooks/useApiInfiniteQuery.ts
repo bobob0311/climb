@@ -4,6 +4,7 @@ import {
     type UseInfiniteQueryResult,
     type InfiniteData,
 } from '@tanstack/react-query';
+import { getMockResponse, shouldUseMockData } from '../mocks/mockApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -50,6 +51,10 @@ export default function useApiInfiniteQuery<TItem>(
                     ? `?${new URLSearchParams(allParams as Record<string, string>).toString()}`
                     : '';
 
+            if (shouldUseMockData()) {
+                return getMockResponse(_url, 'GET', allParams) as TItem[];
+            }
+
             const token =
                 localStorage.getItem('accessToken') ??
                 sessionStorage.getItem('accessToken');
@@ -57,11 +62,17 @@ export default function useApiInfiniteQuery<TItem>(
                 ? { Authorization: `Bearer ${token}` }
                 : {};
 
-            const res = await fetch(`${API_BASE_URL}${_url}${queryString}`, {
-                headers,
-            });
-            if (!res.ok) throw new Error('요청 실패');
-            return (await res.json()) as TItem[];
+            try {
+                const res = await fetch(`${API_BASE_URL}${_url}${queryString}`, {
+                    headers,
+                });
+                if (!res.ok) throw new Error('요청 실패');
+                return (await res.json()) as TItem[];
+            } catch (error) {
+                const mockResponse = getMockResponse(_url, 'GET', allParams);
+                if (mockResponse != null) return mockResponse as TItem[];
+                throw error;
+            }
         },
         getNextPageParam: (lastPage) => {
             if (!lastPage || lastPage.length < pageSize) return undefined;
