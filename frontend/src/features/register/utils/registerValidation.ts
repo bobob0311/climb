@@ -1,4 +1,4 @@
-import type { RegisterValidationParams } from '../../../types/register.types';
+import type { RegisterValidationParams } from '../types/register.types';
 import { REGISTER_MESSAGES } from '../constants/registerMessages';
 
 export function validateRegisterInput({

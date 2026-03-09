@@ -3,7 +3,7 @@ import type {
     RegisterConfirmationRefs,
     RegisterFormValues,
     RegisterInputRefs,
-} from '../../../types/register.types';
+} from '../types/register.types';
 
 export default function useRegisterForm(): {
     refs: RegisterInputRefs;
