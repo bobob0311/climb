@@ -1,7 +1,8 @@
 import type { RegisterValidationParams } from '../types/register.types';
 import { REGISTER_MESSAGES } from '../constants/registerMessages';
+import validators from './validators';
 
-export function validateRegisterInput({
+function validateRegisterInput({
     loginId,
     confirmedId,
     nickname,
@@ -32,3 +33,40 @@ export function validateRegisterInput({
 
     return '';
 }
+
+const validateInput = {
+    id(value: string): string | null {
+        if (!validators.isValidIdLength(value))
+            return REGISTER_MESSAGES.idLength;
+
+        if (!validators.isAlphaNumeric(value))
+            return REGISTER_MESSAGES.idAlphaNumeric;
+
+        return null;
+    },
+
+    password(value: string): string | null {
+        if (!validators.isPasswordMinLength(value))
+            return REGISTER_MESSAGES.passwordMinLength;
+
+        if (!validators.hasNumberAndLetter(value))
+            return REGISTER_MESSAGES.passwordComposition;
+
+        return null;
+    },
+    nickname(value: string): string | null {
+        if (!validators.isKoreanOnly(value))
+            return REGISTER_MESSAGES.nicknameKoreanOnly;
+
+        if (!validators.isValidNicknameLength(value))
+            return REGISTER_MESSAGES.nicknameLength;
+
+        return null;
+    },
+    passwordConfirm(value: string, targetValue?: string) {
+        if (value != targetValue) return REGISTER_MESSAGES.passwordMismatch;
+        return null;
+    },
+};
+
+export { validateInput, validateRegisterInput };

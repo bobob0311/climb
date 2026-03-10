@@ -13,7 +13,7 @@ export default function useRegisterFlow(onSignUpSuccess: () => void) {
     const [isLoading, setIsLoading] = useState(false);
 
     const {
-        refs,
+        inputFieldsWithRef,
         confirmations,
         getFormValues,
         markConfirmedId,
@@ -90,7 +90,7 @@ export default function useRegisterFlow(onSignUpSuccess: () => void) {
     };
 
     return {
-        refs,
+        inputFieldsWithRef,
         modalMessage,
         isLoading,
         handleRegister,

@@ -2,11 +2,13 @@ import { useRef } from 'react';
 import type {
     RegisterConfirmationRefs,
     RegisterFormValues,
-    RegisterInputRefs,
+    RegisterInputField,
 } from '../types/register.types';
+import inputFields from '../constants/inputFieldConfig';
+import { validateInput } from '../utils/registerValidation';
 
 export default function useRegisterForm(): {
-    refs: RegisterInputRefs;
+    inputFieldsWithRef: RegisterInputField[];
     confirmations: RegisterConfirmationRefs;
     getFormValues: () => RegisterFormValues;
     markConfirmedId: (value: string) => void;
@@ -29,13 +31,46 @@ export default function useRegisterForm(): {
         passwordConfirm: passwordConfirmRef.current?.value ?? '',
     });
 
+    const refs = {
+        idRef,
+        passwordRef,
+        passwordConfirmRef,
+        nicknameRef,
+    };
+
+    const inputFieldsWithRef = inputFields.map((field) => {
+        const baseField = {
+            ...field,
+            inputRef: refs[field.key],
+        };
+
+        if (field.key === 'passwordConfirmRef') {
+            return {
+                ...baseField,
+                validations: (value: string) =>
+                    validateInput.passwordConfirm(
+                        value,
+                        refs.passwordRef.current?.value ?? '',
+                    ),
+            };
+        }
+
+        if (field.key === 'passwordRef') {
+            return {
+                ...baseField,
+                onInput: () => {
+                    refs.passwordConfirmRef.current?.dispatchEvent(
+                        new Event('input', { bubbles: true }),
+                    );
+                },
+            };
+        }
+
+        return baseField;
+    });
+
     return {
-        refs: {
-            idRef,
-            passwordRef,
-            passwordConfirmRef,
-            nicknameRef,
-        },
+        inputFieldsWithRef,
         confirmations: {
             confirmedIdRef,
             confirmedNicknameRef,
