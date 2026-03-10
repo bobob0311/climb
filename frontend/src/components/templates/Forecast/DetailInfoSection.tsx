@@ -12,6 +12,7 @@ import DownloadButton from '../../atoms/Button/DownLoadButton.tsx';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
 import useCourseParams from '../../../hooks/useCourseParams.ts';
 import {
+    formatForecastStartTimeFromNow,
     getDisplayDuration,
     getRecommendComment,
 } from '../../../features/forecast/helpers.ts';
@@ -52,6 +53,9 @@ export default function DetailInfoSection() {
         courseForecastData,
     );
     const displayDuration = getDisplayDuration(duration);
+    const startTimeFromNowString = formatForecastStartTimeFromNow(
+        selection.scrollTime,
+    );
 
     const {
         startCard,
@@ -67,7 +71,7 @@ export default function DetailInfoSection() {
                 <img src={cloudImage} css={animatedImageStyles} alt='cloud' />
                 <DownloadButton onClick={card.open} />
                 <DetailTitle
-                    scrollSelectedTime={selection.scrollTime}
+                    startTimeFromNowString={startTimeFromNowString}
                     recommendComment={recommendComment}
                 />
                 <WeatherCardGroup
