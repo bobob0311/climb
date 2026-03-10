@@ -3,48 +3,31 @@ import CommonText from '../../atoms/Text/CommonText.tsx';
 import WeatherInfoColumn from '../../molecules/Forecast/WeatherInfoColumn.tsx';
 import { css } from '@emotion/react';
 import { theme } from '../../../theme/theme.ts';
-import {
-    convertToIconName,
-    covertToWeatherByIconName,
-} from '../../../utils/utils.ts';
+import type { Background } from '../../../features/forecast/types/forecast.types';
 
 interface PropsState {
     title: string;
-    weatherIconName: string;
+    convertedIconName: string;
     weatherIconText: string;
     windSpeed: number;
     temperature: number;
     courseAltitude?: number;
-    precipitationType: string;
-    onClick: (
-        backgroundType: Background,
-        title: string,
-        courseAltitude?: number,
-    ) => void;
+    backgroundType: Background;
+    onClick: () => void;
 }
-
-type Background = 'sunny' | 'cloudy' | 'snow' | 'rain';
 
 const { colors } = theme;
 
 export default function WeatherCard({
     title,
-    weatherIconName,
     weatherIconText,
+    convertedIconName,
     windSpeed,
     temperature,
     courseAltitude,
-    precipitationType,
+    backgroundType,
     onClick,
 }: PropsState) {
-    const convertedIconName = convertToIconName({
-        precipitationType,
-        sky: weatherIconName,
-    });
-
-    const backgroundType: Background =
-        covertToWeatherByIconName(convertedIconName);
-
     const dynamicBackgoundStyle = css`
         background-color: ${colors.accentWeather[backgroundType]};
     `;
@@ -52,10 +35,7 @@ export default function WeatherCard({
     const weatherInfo = { convertedIconName, weatherIconText, windSpeed };
 
     return (
-        <div
-            css={[cardStyles, dynamicBackgoundStyle]}
-            onClick={() => onClick(backgroundType, title, courseAltitude)}
-        >
+        <div css={[cardStyles, dynamicBackgoundStyle]} onClick={onClick}>
             <div css={headerStyles}>
                 <div css={titleStyles}>
                     <CommonText {...titleTextProps}>{title}</CommonText>

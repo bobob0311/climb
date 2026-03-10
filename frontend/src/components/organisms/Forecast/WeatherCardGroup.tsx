@@ -6,6 +6,11 @@ import type {
     SideBarProps,
     CardData,
 } from '../../../features/forecast/types/forecast.types';
+import {
+    convertToIconName,
+    convertToWeatherByIconName,
+} from '../../../utils/utils';
+import type { Background } from '../../../features/forecast/types/forecast.types';
 
 interface PropsState {
     cards: {
@@ -50,7 +55,7 @@ export default function WeatherCardGroup({
     return (
         <div css={weatherSummaryWrapperStyles}>
             <div css={weatherCardWrapperStyles}>
-                {weatherCardList.map((card, index) => {
+                {weatherCardList.map((card) => {
                     const {
                         sky,
                         windSpeed,
@@ -60,17 +65,26 @@ export default function WeatherCardGroup({
                         altitude,
                         title,
                     } = card;
+
+                    const convertedIconName = convertToIconName({
+                        precipitationType,
+                        sky,
+                    });
+
+                    const backgroundType: Background =
+                        convertToWeatherByIconName(convertedIconName);
+
                     return (
                         <WeatherCard
                             key={title}
+                            convertedIconName={sky}
+                            backgroundType={backgroundType}
                             title={title}
-                            weatherIconName={sky}
                             courseAltitude={altitude}
                             weatherIconText={skyDescription}
                             windSpeed={windSpeed}
                             temperature={temperature}
-                            precipitationType={precipitationType}
-                            onClick={(backgroundType, title, courseAltitude) =>
+                            onClick={() =>
                                 onSidebar({
                                     backgroundType,
                                     title,
