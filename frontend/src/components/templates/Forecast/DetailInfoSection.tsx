@@ -17,39 +17,10 @@ import {
     getRecommendComment,
     getSelectedDayStartTime,
 } from './helpers.ts';
-import useCourseForecast from '../../../features/forecast/hooks/useCourseForecast.ts';
-import useSummaryInfo from '../../../features/forecast/hooks/useSummaryInfoSection.ts';
 import ReportPendingModal from '../../molecules/Modal/ReportPendingModal.tsx';
 
-interface CardData {
-    dateTime: string;
-    hikingActivity: HikingActivityStatus;
-    temperature: number;
-    apparentTemperature: number;
-    temperatureDescription: string;
-    precipitation: string;
-    probabilityDescription: string;
-    precipitationType: string;
-    sky: string;
-    skyDescription: string;
-    windSpeed: number;
-    windSpeedDescription: string;
-    humidity: number;
-    humidityDescription: string;
-    highestTemperature: number;
-    lowestTemperature: number;
-    title?: string;
-}
-
-interface SideBarProps {
-    backgroundType: Background;
-    title: string;
-    courseAltitude?: number;
-    data: CardData;
-}
-
-type HikingActivityStatus = '좋음' | '매우 좋음' | '나쁨' | '약간 나쁨';
-type Background = 'sunny' | 'cloudy' | 'snow' | 'rain';
+import type { SideBarProps } from '../../../features/forecast/types/forecast.types';
+import useDetailData from '../../../features/forecast/hooks/useDetailData.ts';
 
 export default function DetailInfoSection() {
     const { selectedCourseId, selectedMountainId, selectedWeekdayId } =
@@ -65,18 +36,10 @@ export default function DetailInfoSection() {
         getSelectedDayStartTime(selectedWeekdayId),
     );
 
-    const {
-        data: courseForecastData,
-        isError: isCourseDataError,
-        isLoading: isCourseDataLoading,
-    } = useCourseForecast(selectedCourseId, scrollSelectedTime);
-
-    const {
-        data: summaryData,
-        isError: isDurationError,
-        isLoading: isDurationLoading,
-    } = useSummaryInfo(selectedCourseId, scrollSelectedTime);
-    const duration = summaryData?.duration;
+    const { courseForecastData, duration, isError, isLoading } = useDetailData({
+        selectedCourseId,
+        scrollSelectedTime,
+    });
 
     useEffect(() => {
         setIsSidebarOpen(false);
@@ -92,7 +55,7 @@ export default function DetailInfoSection() {
         setIsSidebarOpen(true);
     };
 
-    if (isCourseDataError || isDurationError)
+    if (isError)
         return (
             <div css={contentSectionStyles}>
                 <Modal onClose={() => window.location.reload()}>
@@ -102,12 +65,14 @@ export default function DetailInfoSection() {
             </div>
         );
 
-    if (
-        !courseForecastData ||
-        !duration ||
-        isDurationLoading ||
-        isCourseDataLoading
-    )
+    if (isLoading)
+        return (
+            <div css={contentSectionStyles}>
+                <ReportPendingModal />
+            </div>
+        );
+
+    if (!courseForecastData || !duration)
         return (
             <div css={contentSectionStyles}>
                 <ReportPendingModal />
@@ -146,13 +111,10 @@ export default function DetailInfoSection() {
                     }}
                     isToggleOn={isToggleOn}
                     courseAltitude={courseAltitude}
-                    onSidebar={(
-                        backgroundType: Background,
-                        title: string,
-                        courseAltitude: number,
-                        data: CardData,
-                    ) =>
-                        openSidebar(backgroundType, title, courseAltitude, data)
+                    onSidebar={(data: SideBarProps) =>
+                        openSidebar({
+                            ...data,
+                        })
                     }
                 />
 
