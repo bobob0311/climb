@@ -1,70 +1,35 @@
 import { css } from '@emotion/react';
 import CheckBox from '../../atoms/Form/CheckBox.tsx';
-import type { ColorValueType } from '../../../types/themeTypes';
-import { useState } from 'react';
 import { theme } from '../../../theme/theme.ts';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
-import { privacyInfo, termsInfo } from '../../../constants/privacy.ts';
-
+import {
+    allCheckBox,
+    checkBoxes,
+} from '../../../features/register/constants/registerCheckBoxesConfig.ts';
+import RegisterInfoModalContent from '../../molecules/Modal/RegisterInfoModalContent.tsx';
+import info from '../../../features/register/constants/privacy.ts';
+import useRegisterCheckBoxes from '../../../features/register/hooks/useRegisterCheckBoxes.ts';
 interface PropsState {
     onCheckStatusChange: (isValid: boolean) => void;
-}
-
-interface CheckBoxItem {
-    id: string;
-    text: string;
-    required: boolean;
-    Modal?: React.ReactNode;
 }
 
 export default function RegisterCheckBoxes({
     onCheckStatusChange,
 }: PropsState) {
-    const initialCheckedItems: Record<string, boolean> = {};
-    checkBoxes.forEach((box) => {
-        initialCheckedItems[box.id] = false;
-    });
-
-    const [checkedItems, setCheckedItems] = useState(initialCheckedItems);
-    const [allChecked, setAllChecked] = useState(false);
-    const [openModalId, setOpenModalId] = useState<string | null>(null);
-
-    const handleAllCheck = () => {
-        const newState = !allChecked;
-        const updatedItems: Record<string, boolean> = {};
-        checkBoxes.forEach((box) => {
-            updatedItems[box.id] = newState;
-        });
-
-        setCheckedItems(updatedItems);
-        setAllChecked(newState);
-
-        if (onCheckStatusChange) onCheckStatusChange(newState);
-    };
-
-    const handleIndividualCheck = (id: string) => {
-        const updatedItems = { ...checkedItems, [id]: !checkedItems[id] };
-        const allAreChecked = checkBoxes.every((box) => updatedItems[box.id]);
-
-        setCheckedItems(updatedItems);
-        setAllChecked(allAreChecked);
-
-        if (onCheckStatusChange) {
-            const requiredChecked = checkBoxes
-                .filter((box) => box.required)
-                .every((box) => updatedItems[box.id]);
-            onCheckStatusChange(requiredChecked);
-        }
-    };
-
-    const handleModalToggle = (id: string) => {
-        setOpenModalId((prev) => (prev === id ? null : id));
-    };
+    const {
+        checkedItems,
+        allChecked,
+        openModalId,
+        setOpenModalId,
+        handleAllCheck,
+        handleIndividualCheck,
+        handleModalToggle,
+    } = useRegisterCheckBoxes({ onCheckStatusChange });
 
     return (
         <>
             <CheckBox
-                {...allCheckBoxProps}
+                {...allCheckBox}
                 onChange={handleAllCheck}
                 checked={allChecked}
             />
@@ -78,7 +43,7 @@ export default function RegisterCheckBoxes({
                             onChange={() => handleIndividualCheck(box.id)}
                             checked={checkedItems[box.id]}
                         />
-                        {box.Modal && (
+                        {box.modalType && (
                             <button
                                 type='button'
                                 css={buttonStyles}
@@ -89,7 +54,10 @@ export default function RegisterCheckBoxes({
                         )}
                         {openModalId === box.id && (
                             <Modal onClose={() => setOpenModalId(null)}>
-                                {box.Modal}
+                                <RegisterInfoModalContent
+                                    title={info[box.modalType!].title}
+                                    content={info[box.modalType!].content}
+                                />
                             </Modal>
                         )}
                     </div>
@@ -98,50 +66,6 @@ export default function RegisterCheckBoxes({
         </>
     );
 }
-
-const allCheckBoxProps = {
-    id: 'all-check-box',
-    text: '모두 동의합니다.',
-    subTitle: '선택 동의 항목 포함',
-    grey: 98 as ColorValueType,
-    required: false,
-};
-
-const modalContent = css`
-    width: 40rem;
-    height: 38rem;
-`;
-
-const checkBoxes: CheckBoxItem[] = [
-    { id: 'age', text: '[필수] 만 14세 이상입니다', required: true },
-    {
-        id: 'terms',
-        text: '[필수] 이용약관 동의',
-        required: true,
-        Modal: (
-            <div css={modalContent}>
-                <h2>{termsInfo.title}</h2>
-                <pre>{termsInfo.content}</pre>
-            </div>
-        ),
-    },
-    {
-        id: 'privacy',
-        text: '[선택] 개인정보 마케팅 활용 동의',
-        required: false,
-        Modal: (
-            <div css={modalContent}>
-                <h2>{privacyInfo.title}</h2>
-                <pre>{privacyInfo.content}</pre>
-            </div>
-        ),
-    },
-    {
-        id: 'event',
-        text: '[선택] 이벤트, 알림 및 SMS 등 수신',
-        required: false,
-    },
-];
 
 const { colors } = theme;
 
