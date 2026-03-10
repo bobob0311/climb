@@ -4,12 +4,12 @@ import CommonText from '../../atoms/Text/CommonText';
 
 interface PropsState {
     recommendComment: string;
-    scrollSeletedTime: string;
+    scrollSelectedTime: string;
 }
 
 export default function DetailTitle({
     recommendComment,
-    scrollSeletedTime,
+    scrollSelectedTime,
 }: PropsState) {
     function formatDateTime(input: string) {
         const date = new Date(input);
@@ -44,7 +44,7 @@ export default function DetailTitle({
     return (
         <DisplayHeading HeadingTag='h1'>
             <span css={displayHeadingStyle}>
-                {formatDateTime(scrollSeletedTime)}
+                {formatDateTime(scrollSelectedTime)}
                 <CommonText
                     TextTag='span'
                     fontSize='display'
