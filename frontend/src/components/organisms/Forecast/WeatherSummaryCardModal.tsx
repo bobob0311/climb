@@ -1,9 +1,8 @@
-import { css, keyframes } from '@emotion/react';
+import { css } from '@emotion/react';
 import { theme } from '../../../theme/theme.ts';
 import { useState } from 'react';
 
-import useApiMutation from '../../../hooks/useApiMutation.ts';
-import useForecastCardData from '../../../hooks/useForecastCardData.ts';
+import useForecastCardData from '../../../features/forecast/hooks/useForecastCardData.ts';
 
 import Icon from '../../atoms/Icon/Icons.tsx';
 import WeatherSummaryCardHeader from '../../molecules/Forecast/WeatherSummaryCardHeader.tsx';
@@ -11,7 +10,8 @@ import LoginRequiredModal from '../../molecules/Modal/LoginRequiredModal.tsx';
 import FrontWeatherSummaryCard from './FrontWeatherSummaryCard.tsx';
 import BackWeatherSummaryCard from './BackWeatherSummaryCard.tsx';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
-import { validateAccessToken } from '../../../utils/utils.ts';
+import CommonPendingModal from '../../molecules/Modal/CommonPending.tsx';
+import useStoreMountainCard from '../../../features/forecast/hooks/useStroeMountainCard.ts';
 
 interface Props {
     onClose: () => void;
@@ -25,88 +25,56 @@ export default function WeatherSummaryCardModal({
     selectedCourseId,
 }: Props) {
     const [isFront, setIsFront] = useState<boolean>(true);
-    const [errorMessage, setErrorMessage] = useState<string>('');
-    const [isModal, setIsModal] = useState<boolean>(false);
 
     const { frontCard, backCard, isLoading, isError } = useForecastCardData(
         selectedCourseId,
         scrollSelectedTime,
     );
 
-    const cardData = { frontCard, backCard };
+    const {
+        errorMessage,
+        isExpiredModalOpen,
+        handleStoreMountainCard,
+        closeErrorMessage,
+        closeExpiredModal,
+    } = useStoreMountainCard({
+        selectedCourseId,
+        scrollSelectedTime,
+        onSuccessClose: onClose,
+    });
 
-    const storeMountainCardMutation = useApiMutation<any>(
-        `/card/interaction/history/${selectedCourseId}`,
-        'PUT',
-        {
-            onSuccess: () => {
-                alert('최근 본 등산목록에 추가되었습니다.');
-                onClose();
-            },
-            onError: () => {
-                alert('잠시후 다시 시도해주세요.');
-            },
-        },
-        { startDateTime: scrollSelectedTime },
-    );
+    const handleFlipCard = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        setIsFront((prev) => !prev);
+    };
 
     const handleStoreButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        const accessToken =
-            localStorage.getItem('accessToken') ??
-            sessionStorage.getItem('accessToken');
-        if (!accessToken) {
-            setErrorMessage('로그인이 필요한 서비스입니다.');
-            return;
-        }
-        if (validateAccessToken()) {
-            storeMountainCardMutation.mutate({});
-        } else {
-            setIsModal(true);
-        }
+        handleStoreMountainCard();
     };
 
-    if (isLoading)
-        return (
-            <div css={loadingStyles} role='dialog' aria-modal='true'>
-                <Icon name='clear-day' width={2} height={2} color='grey-100' />
-                <Icon name='rain' width={2} height={2} color='grey-100' />
-                <Icon name='snow' width={2} height={2} color='grey-100' />
-                <Icon
-                    name='thunderstorm'
-                    width={2}
-                    height={2}
-                    color='grey-100'
-                />
-            </div>
-        );
+    if (isLoading) return <CommonPendingModal />;
 
     return (
         <div css={overlayStyles}>
             <WeatherSummaryCardHeader />
+
             <div
-                css={modalStyles(isFront, cardData.frontCard.mountainImageUrl)}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setIsFront((prev) => !prev);
-                }}
+                css={modalStyles(isFront, frontCard.mountainImageUrl)}
+                onClick={handleFlipCard}
             >
                 <div className='front'>
                     <FrontWeatherSummaryCard
-                        cardData={cardData.frontCard}
+                        cardData={frontCard}
                         onClose={onClose}
                     />
                 </div>
                 <div className='back'>
-                    <BackWeatherSummaryCard cardData={cardData.backCard} />
+                    <BackWeatherSummaryCard cardData={backCard} />
                 </div>
             </div>
-            <button
-                onClick={(e) => {
-                    handleStoreButtonClick(e);
-                }}
-                css={storeBtnStyles}
-            >
+
+            <button onClick={handleStoreButtonClick} css={storeBtnStyles}>
                 <Icon
                     name='download-02'
                     width={1.4}
@@ -116,18 +84,23 @@ export default function WeatherSummaryCardModal({
             </button>
 
             {errorMessage && (
-                <LoginRequiredModal onClose={() => setErrorMessage('')} />
+                <LoginRequiredModal
+                    text={errorMessage}
+                    onClose={closeErrorMessage}
+                />
             )}
+
             {isError && (
                 <Modal onClose={() => window.location.reload()}>
                     데이터 페칭중 오류가 발생했습니다. 새로고침을 통해 다시
                     시도해주세요.
                 </Modal>
             )}
-            {isModal && (
+
+            {isExpiredModalOpen && (
                 <LoginRequiredModal
                     text='로그인 유효시간이 지났습니다.'
-                    onClose={() => setIsModal(false)}
+                    onClose={closeExpiredModal}
                 />
             )}
         </div>
@@ -208,44 +181,5 @@ const storeBtnStyles = css`
     cursor: pointer;
     &:hover {
         opacity: 0.8;
-    }
-`;
-
-const show2 = keyframes`
-  0%, 24.99% { opacity: 0; }
-  25%, 99% { opacity: 1; }
-  100% { opacity: 0; }
-`;
-
-const show3 = keyframes`
-  0%, 49.99% { opacity: 0; }
-  50%, 99% { opacity: 1; }
-  100% { opacity: 0; }
-`;
-
-const show4 = keyframes`
-  0%, 74.99% { opacity: 0; }
-  75%, 99% { opacity: 1; }
-  100% { opacity: 0; }
-`;
-
-const loadingStyles = css`
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    background-color: rgba(0, 0, 0, 0.1);
-    z-index: 50;
-
-    & > :nth-of-type(2) {
-        animation: ${show2} 2s linear infinite;
-    }
-    & > :nth-of-type(3) {
-        animation: ${show3} 2s linear infinite;
-    }
-    & > :nth-of-type(4) {
-        animation: ${show4} 2s linear infinite;
     }
 `;
