@@ -1,7 +1,6 @@
 import { css } from '@emotion/react';
 import bgImage from '../../../assets/Bg-fixed.png';
 import cloudImage from '../../../assets/Bg-scroll.png';
-import { useEffect, useState } from 'react';
 
 import DetailTitle from '../../../components/molecules/Forecast/DetailTitle.tsx';
 import TimeSeletor from '../../../components/organisms/Forecast/TimeSeletor.tsx';
@@ -12,48 +11,25 @@ import WeatherCardModal from '../../organisms/Forecast/WeatherSummaryCardModal.t
 import DownloadButton from '../../atoms/Button/DownLoadButton.tsx';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
 import useCourseParams from '../../../hooks/useCourseParams.ts';
-import {
-    getDisplayDuration,
-    getRecommendComment,
-    getSelectedDayStartTime,
-} from './helpers.ts';
-import ReportPendingModal from '../../molecules/Modal/ReportPendingModal.tsx';
+import { getDisplayDuration, getRecommendComment } from './helpers.ts';
 
 import type { SideBarProps } from '../../../features/forecast/types/forecast.types';
 import useDetailData from '../../../features/forecast/hooks/useDetailData.ts';
+import useDetailControls from '../../../features/forecast/hooks/useDetailInfoControls.ts';
+import CommonPendingModal from '../../molecules/Modal/CommonPending.tsx';
 
 export default function DetailInfoSection() {
     const { selectedCourseId, selectedMountainId, selectedWeekdayId } =
         useCourseParams();
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-    const [isOpenCard, setIsOpenCard] = useState<boolean>(false);
-    const [isToggleOn, setIsToggleOn] = useState<boolean>(false);
-
-    const [sidebarData, setSidebarData] = useState<SideBarProps | null>(null);
-
-    const [scrollSelectedTime, setScrollSelectedTime] = useState<string>(
-        getSelectedDayStartTime(selectedWeekdayId),
-    );
+    const { card, sidebar, selection } = useDetailControls({
+        selectedWeekdayId,
+    });
 
     const { courseForecastData, duration, isError, isLoading } = useDetailData({
         selectedCourseId,
-        scrollSelectedTime,
+        scrollSelectedTime: selection.scrollTime,
     });
-
-    useEffect(() => {
-        setIsSidebarOpen(false);
-    }, [scrollSelectedTime, isToggleOn]);
-
-    const openSidebar = (
-        backgroundType: Background,
-        title: string,
-        courseAltitude: number | undefined,
-        data: CardData,
-    ) => {
-        setSidebarData({ backgroundType, title, courseAltitude, data });
-        setIsSidebarOpen(true);
-    };
 
     if (isError)
         return (
@@ -65,22 +41,11 @@ export default function DetailInfoSection() {
             </div>
         );
 
-    if (isLoading)
-        return (
-            <div css={contentSectionStyles}>
-                <ReportPendingModal />
-            </div>
-        );
-
-    if (!courseForecastData || !duration)
-        return (
-            <div css={contentSectionStyles}>
-                <ReportPendingModal />
-            </div>
-        );
+    if (isLoading || !courseForecastData || !duration)
+        return <CommonPendingModal />;
 
     const recommendComment = getRecommendComment(
-        isToggleOn,
+        selection.isAdjustMode,
         courseForecastData,
     );
     const displayDuration = getDisplayDuration(duration);
@@ -97,9 +62,9 @@ export default function DetailInfoSection() {
         <>
             <div css={contentSectionStyles}>
                 <img src={cloudImage} css={animatedImageStyles} alt='cloud' />
-                <DownloadButton onClick={() => setIsOpenCard(true)} />
+                <DownloadButton onClick={card.open} />
                 <DetailTitle
-                    scrollSeletedTime={scrollSelectedTime}
+                    scrollSelectedTime={selection.scrollTime}
                     recommendComment={recommendComment}
                 />
                 <WeatherCardGroup
@@ -109,36 +74,34 @@ export default function DetailInfoSection() {
                         descentCard,
                         adjustedArrivalCard,
                     }}
-                    isToggleOn={isToggleOn}
+                    isToggleOn={selection.isAdjustMode}
                     courseAltitude={courseAltitude}
-                    onSidebar={(data: SideBarProps) =>
-                        openSidebar({
-                            ...data,
-                        })
+                    onSidebar={(sidebarData: SideBarProps) =>
+                        sidebar.open(sidebarData)
                     }
                 />
 
                 <TimeSeletor
-                    scrollSelectedTime={scrollSelectedTime}
-                    onToggle={() => setIsToggleOn((prev) => !prev)}
-                    isToggleOn={isToggleOn}
+                    scrollSelectedTime={selection.scrollTime}
+                    onToggle={selection.toggleAdjustMode}
+                    isToggleOn={selection.isAdjustMode}
                     time={displayDuration}
                     selectedMountainId={selectedMountainId}
-                    onTimeSelect={(time) => setScrollSelectedTime(time)}
+                    onTimeSelect={(time) => selection.setScrollTime(time)}
                 />
             </div>
-            {isSidebarOpen && (
+            {sidebar.isOpen && (
                 <WeatherDetailSideBar
-                    courseAltitude={sidebarData?.courseAltitude}
-                    type={sidebarData?.title!}
-                    onClose={() => setIsSidebarOpen(false)}
-                    card={sidebarData}
+                    courseAltitude={sidebar.data?.courseAltitude}
+                    type={sidebar.data?.title!}
+                    onClose={sidebar.close}
+                    card={sidebar.data}
                 />
             )}
-            {isOpenCard && (
+            {card.isOpen && (
                 <WeatherCardModal
-                    onClose={() => setIsOpenCard(false)}
-                    scrollSelectedTime={scrollSelectedTime}
+                    onClose={card.close}
+                    scrollSelectedTime={selection.scrollTime}
                     selectedCourseId={selectedCourseId}
                 />
             )}
