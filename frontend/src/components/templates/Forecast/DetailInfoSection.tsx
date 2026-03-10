@@ -17,8 +17,8 @@ import {
     getRecommendComment,
     getSelectedDayStartTime,
 } from './helpers.ts';
-import useCourseForecast from '../../../hooks/useCourseForecast.ts';
-import useSummaryInfo from '../../../hooks/useSummaryInfoSection.ts';
+import useCourseForecast from '../../../features/forecast/hooks/useCourseForecast.ts';
+import useSummaryInfo from '../../../features/forecast/hooks/useSummaryInfoSection.ts';
 import ReportPendingModal from '../../molecules/Modal/ReportPendingModal.tsx';
 
 interface CardData {
