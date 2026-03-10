@@ -2,27 +2,44 @@ import { css } from '@emotion/react';
 import { theme } from '../../../theme/theme.ts';
 import { useMemo } from 'react';
 import { useDraggableScroll } from '../../../hooks/useDraggableScroll.ts';
-import { useForecastByTime } from '../../../hooks/useForecastByTime.ts';
+import { useForecastByTime } from '../../../features/forecast/hooks/useForecastByTime.ts';
 
 import { convertToIconName } from '../../../utils/utils.ts';
-import { formatHour12 } from '../../templates/Forecast/helpers.ts';
+import { formatHour12 } from '../../../features/forecast/helpers.ts';
 
 import TimeSelectorHeader from '../../molecules/Forecast/TimeSeletorHeader.tsx';
 import WeatherCell from '../../molecules/Forecast/WeatherCell.tsx';
 import CommonText from '../../atoms/Text/CommonText.tsx';
 
 interface PropsState {
-    onToggle: () => void;
-    isToggleOn: boolean;
+    onToggleAdjustMode: () => void;
+    isAdjustMode: boolean;
     time: number;
     selectedMountainId: number;
     onTimeSelect?: (time: string) => void;
     scrollSelectedTime: string;
 }
 
+function getStartAndEndTimeHoursOnly(
+    scrollStartTimeStr: string,
+    duration: number,
+): [string, string] {
+    const startDate = new Date(scrollStartTimeStr);
+
+    const durationHours = Math.floor(duration);
+    const endDate = new Date(
+        startDate.getTime() + durationHours * 60 * 60 * 1000,
+    );
+
+    const startFormatted = formatHour12(startDate);
+    const endFormatted = formatHour12(endDate);
+
+    return [startFormatted, endFormatted];
+}
+
 export default function TimeSeletor({
-    onToggle,
-    isToggleOn,
+    onToggleAdjustMode,
+    isAdjustMode,
     time,
     selectedMountainId,
     onTimeSelect,
@@ -32,45 +49,29 @@ export default function TimeSeletor({
         mountainId: selectedMountainId,
     });
 
+    const timeWindow = time * 2;
+
     const dynamicScrollSizeStyles = css`
-        width: ${time * 2 * 5.5 + 5}rem;
+        width: ${timeWindow * 5.5 + 5}rem;
     `;
-
-    function getStartAndEndTimeHoursOnly(
-        scrollStartTimeStr: string,
-        duration: number,
-    ): [string, string] {
-        const startDate = new Date(scrollStartTimeStr);
-
-        const durationHours = Math.floor(duration);
-        const endDate = new Date(
-            startDate.getTime() + durationHours * 60 * 60 * 1000,
-        );
-
-        const startFormatted = formatHour12(startDate);
-        const endFormatted = formatHour12(endDate);
-
-        return [startFormatted, endFormatted];
-    }
-
     const [startHourTime, endHourTime] = useMemo(
-        () => getStartAndEndTimeHoursOnly(scrollSelectedTime, time * 2),
+        () => getStartAndEndTimeHoursOnly(scrollSelectedTime, timeWindow),
         [scrollSelectedTime, time],
     );
     const { scrollRef, startDrag, moveDrag, endDrag } = useDraggableScroll({
         data: forecastData,
         scrollSelectedTime,
         onTimeSelect,
-        timeWindow: time * 2,
+        timeWindow: timeWindow,
         rawDataLength: rawDataLength,
     });
 
     return (
         <div css={timeSeletorStyles}>
             <TimeSelectorHeader
-                time={time}
-                isToggleOn={isToggleOn}
-                onToggle={onToggle}
+                timeWindow={timeWindow}
+                isToggleOn={isAdjustMode}
+                onToggle={onToggleAdjustMode}
             />
 
             <div css={contentWrapperStyles}>

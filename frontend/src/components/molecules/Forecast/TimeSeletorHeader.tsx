@@ -7,13 +7,13 @@ import SelectorTitleText from '../../atoms/Text/SelectorTitle';
 import { theme } from '../../../theme/theme';
 
 interface PropsState {
-    time: number;
+    timeWindow: number;
     isToggleOn: boolean;
     onToggle: () => void;
 }
 
 export default function TimeSelectorHeader({
-    time,
+    timeWindow,
     isToggleOn,
     onToggle,
 }: PropsState) {
@@ -21,7 +21,9 @@ export default function TimeSelectorHeader({
         <div css={headerStyles}>
             <div>
                 <SelectorTitleText>출발 시간 선택</SelectorTitleText>
-                <span css={courseTimeStyles}>{`왕복${time * 2}시간 코스`}</span>
+                <span
+                    css={courseTimeStyles}
+                >{`왕복${timeWindow}시간 코스`}</span>
             </div>
             <div>
                 <SelectorTitleText>고도 보정하기</SelectorTitleText>
