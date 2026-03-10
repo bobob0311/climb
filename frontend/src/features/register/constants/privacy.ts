@@ -1,4 +1,4 @@
-export const privacyInfo = {
+const privacy = {
     title: '수집방법',
     content: `
 회원 가입 시
@@ -15,7 +15,7 @@ export const privacyInfo = {
 `,
 };
 
-export const termsInfo = {
+const terms = {
     title: '오르는오늘 서비스 이용약관',
     content: `
 제1조 (목적)
@@ -70,3 +70,10 @@ export const termsInfo = {
 이 약관은 2025년 7월 30일부터 시행합니다.
 `,
 };
+
+const info = {
+    privacy,
+    terms,
+};
+
+export default info;
