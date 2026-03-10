@@ -77,7 +77,7 @@ export function formatDateToKorean(dateStr: string): string {
     return `${month}월 ${day}일`;
 }
 
-export const covertToWeatherByIconName = (iconName: string): Background => {
+export const convertToWeatherByIconName = (iconName: string): Background => {
     switch (iconName) {
         case 'clear-day':
             return 'sunny';
