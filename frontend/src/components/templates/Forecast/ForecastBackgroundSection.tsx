@@ -1,52 +1,27 @@
-import { useEffect, useRef } from 'react';
 import { css } from '@emotion/react';
 import { useSearchParams } from 'react-router-dom';
+import useParallaxBackground from '../../../features/forecast/hooks/useParallaxBackground';
 
 export default function ForecastBackgroundSection() {
     const [searchParams] = useSearchParams();
     const courseId = Number(searchParams.get('courseid'));
     const backgroundImageIndex = (courseId % 3) + 1;
 
-    const layer1Ref = useRef<HTMLDivElement>(null);
-    const layer2Ref = useRef<HTMLDivElement>(null);
-    const layer3Ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        let ticking = false;
-
-        const handleScroll = () => {
-            const scrollY = window.scrollY;
-            const pageHeight = window.innerHeight;
-            const limit = pageHeight * 0.05;
-            const effectiveScroll = Math.min(scrollY, limit);
-
-            if (!ticking) {
-                ticking = true;
-                window.requestAnimationFrame(() => {
-                    if (layer2Ref.current) {
-                        layer2Ref.current.style.transform = `translate3d(0, ${-(effectiveScroll * 0.4)}px, 0)`;
-                    }
-                    if (layer3Ref.current) {
-                        layer3Ref.current.style.transform = `translate3d(0, ${-(effectiveScroll * 0.8)}px, 0)`;
-                    }
-                    ticking = false;
-                });
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    const { middleLayerRef, frontLayerRef } = useParallaxBackground({
+        limitRatio: 0.4,
+        middleSpeed: 0.4,
+        frontSpeed: 0.8,
+    });
 
     return (
         <div>
-            <div ref={layer1Ref} css={topLayerStyles(backgroundImageIndex)} />
+            <div css={topLayerStyles(backgroundImageIndex)} />
             <div
-                ref={layer2Ref}
+                ref={middleLayerRef}
                 css={middleLayerStyles(backgroundImageIndex)}
             />
             <div
-                ref={layer3Ref}
+                ref={frontLayerRef}
                 css={bottomLayerStyles(backgroundImageIndex)}
             />
             <div css={overlayGradient} />
