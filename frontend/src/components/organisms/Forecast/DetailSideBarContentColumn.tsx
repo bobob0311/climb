@@ -3,28 +3,25 @@ import { theme } from '../../../theme/theme';
 import DetailSideBarContent from '../../molecules/Forecast/DetailSideBarContent';
 import {
     convertToIconName,
-    covertToWeatherByIconName,
+    convertToWeatherByIconName,
     convertWeatherToKorean,
 } from '../../../utils/utils';
+import type { WeatherDetailContentData } from '../../../features/forecast/types/forecast.types';
 
 export default function DetailSideBarContentColumn({
-    weatherDetailContentData,
-}: any) {
-    const {
-        apparentTemperature,
-        temperatureDescription,
-        precipitation,
-        probabilityDescription,
-        sky,
-        skyDescription,
-        windSpeed,
-        windSpeedDescription,
-        humidity,
-        humidityDescription,
-        precipitationType,
-    } = weatherDetailContentData;
-
-    const weatherStatus = covertToWeatherByIconName(
+    apparentTemperature,
+    temperatureDescription,
+    precipitation,
+    probabilityDescription,
+    sky,
+    skyDescription,
+    windSpeed,
+    windSpeedDescription,
+    humidity,
+    humidityDescription,
+    precipitationType,
+}: WeatherDetailContentData) {
+    const weatherStatus = convertToWeatherByIconName(
         convertToIconName({ precipitationType, sky }),
     );
 
