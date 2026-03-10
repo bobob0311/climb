@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { SideBarProps } from '../types/forecast.types';
-import { getSelectedDayStartTime } from '../../../components/templates/Forecast/helpers.ts';
+import { getSelectedDayStartTime } from '../helpers.ts';
 
 interface UseDetailControlsProps {
     selectedWeekdayId: number;

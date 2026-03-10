@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import useApiQuery from '../../../hooks/useApiQuery.ts';
-import { getCurrentHourString } from '../../../components/templates/Forecast/helpers.ts';
+import { getCurrentHourString } from '../helpers.ts';
 
 export interface ForecastItem {
     dateTime: string;

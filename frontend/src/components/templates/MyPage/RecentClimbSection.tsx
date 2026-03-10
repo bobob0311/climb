@@ -7,7 +7,7 @@ import { LabelHeading } from '../../atoms/Heading/Heading';
 import Icon from '../../atoms/Icon/Icons';
 import CommonText from '../../atoms/Text/CommonText';
 
-import { formatDate } from '../Forecast/helpers';
+import { formatDate } from '../../../features/forecast/helpers';
 
 interface RecentClimbData {
     id: number;

@@ -6,7 +6,7 @@ import Modal from '../../molecules/Modal/RegisterModal.tsx';
 
 import useCourseParams from '../../../hooks/useCourseParams.ts';
 import useSummaryInfo from '../../../features/forecast/hooks/useSummaryInfoSection.ts';
-import { getSelectedDayStartTime } from './helpers.ts';
+import { getSelectedDayStartTime } from '../../../features/forecast/helpers.ts';
 
 export default function SummaryInfoSection() {
     const { selectedCourseId, selectedWeekdayId } = useCourseParams();

@@ -11,7 +11,10 @@ import WeatherCardModal from '../../organisms/Forecast/WeatherSummaryCardModal.t
 import DownloadButton from '../../atoms/Button/DownLoadButton.tsx';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
 import useCourseParams from '../../../hooks/useCourseParams.ts';
-import { getDisplayDuration, getRecommendComment } from './helpers.ts';
+import {
+    getDisplayDuration,
+    getRecommendComment,
+} from '../../../features/forecast/helpers.ts';
 
 import type { SideBarProps } from '../../../features/forecast/types/forecast.types';
 import useDetailData from '../../../features/forecast/hooks/useDetailData.ts';

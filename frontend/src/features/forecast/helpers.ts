@@ -1,3 +1,5 @@
+import type { CourseForecast } from './types/forecast.types';
+
 export function getSelectedDayStartTime(dayOffset: number): string {
     const now = new Date();
     const targetDate = new Date(
@@ -49,35 +51,3 @@ export function formatDate(dateStr: string): string {
     if (!dateStr) return '';
     return dateStr.split('T')[0].replace(/-/g, '.');
 }
-
-interface CourseForecast {
-    startCard: CardData;
-    arrivalCard: CardData;
-    adjustedArrivalCard: CardData;
-    descentCard: CardData;
-    courseAltitude: number;
-    recommendComment: string;
-    adjustedRecommendComment: string;
-}
-
-interface CardData {
-    dateTime: string;
-    hikingActivity: HikingActivityStatus;
-    temperature: number;
-    apparentTemperature: number;
-    temperatureDescription: string;
-    precipitation: string;
-    probabilityDescription: string;
-    precipitationType: string;
-    sky: string;
-    skyDescription: string;
-    windSpeed: number;
-    windSpeedDescription: string;
-    humidity: number;
-    humidityDescription: string;
-    highestTemperature: number;
-    lowestTemperature: number;
-    title?: string;
-}
-
-type HikingActivityStatus = '좋음' | '매우 좋음' | '나쁨' | '약간 나쁨';
