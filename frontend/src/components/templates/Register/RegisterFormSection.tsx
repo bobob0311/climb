@@ -10,7 +10,7 @@ export default function RegisterFormSection() {
     const navigate = useNavigate();
 
     const {
-        refs,
+        inputFieldsWithRef,
         modalMessage,
         isLoading,
         handleRegister,
@@ -24,7 +24,7 @@ export default function RegisterFormSection() {
         <div css={wrapperStyles}>
             <RegisterHeader />
             <RegisterForm
-                refs={refs}
+                inputFieldsWithRef={inputFieldsWithRef}
                 onClickRegister={handleRegister}
                 onClickCheckId={handleCheckId}
                 onClickCheckNickName={handleCheckNickname}

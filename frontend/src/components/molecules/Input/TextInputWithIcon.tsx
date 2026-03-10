@@ -17,14 +17,9 @@ interface PropsState {
     type?: InputType;
     iconAriaLabel: string;
     icon: string;
-    validations?: ValidationRule[];
+    validations?: (value: string) => string | null;
     inputRef: RefObject<HTMLInputElement>;
     onInput?: () => void;
-}
-
-interface ValidationRule {
-    check: (value: string) => boolean;
-    message: string;
 }
 
 type InputType = 'text' | 'password';
@@ -37,7 +32,7 @@ export default function TextInputWithIcon({
     type = 'text',
     icon,
     iconAriaLabel,
-    validations = [],
+    validations,
     inputRef,
     onInput,
 }: PropsState) {
@@ -46,11 +41,11 @@ export default function TextInputWithIcon({
     const handleChange = (text: string) => {
         const newValue = text;
 
-        for (const rule of validations) {
-            if (!rule.check(newValue)) {
-                setErrorMessage(rule.message);
-                return;
-            }
+        const errorMessage = validations?.(newValue);
+
+        if (errorMessage) {
+            setErrorMessage(errorMessage);
+            return;
         }
         setErrorMessage('');
     };
