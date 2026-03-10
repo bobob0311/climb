@@ -5,8 +5,7 @@ import PendingModal from '../../molecules/Modal/ReportPendingModal.tsx';
 import Modal from '../../molecules/Modal/RegisterModal.tsx';
 
 import useCourseParams from '../../../hooks/useCourseParams.ts';
-import useSummaryInfo from '../../../hooks/useSummaryInfoSection.ts';
-
+import useSummaryInfo from '../../../features/forecast/hooks/useSummaryInfoSection.ts';
 import { getSelectedDayStartTime } from './helpers.ts';
 
 export default function SummaryInfoSection() {

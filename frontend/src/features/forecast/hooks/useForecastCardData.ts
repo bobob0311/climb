@@ -1,5 +1,4 @@
-import useApiQuery from './useApiQuery';
-
+import useApiQuery from '../../../hooks/useApiQuery';
 export default function useForecastCardData(
     selectedCourseId: number,
     seletedTime: string,

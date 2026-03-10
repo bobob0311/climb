@@ -1,5 +1,5 @@
 import { keepPreviousData } from '@tanstack/react-query';
-import useApiQuery from './useApiQuery';
+import useApiQuery from '../../../hooks/useApiQuery';
 
 interface MountainCourseData {
     courseImageUrl: string;
