@@ -3,56 +3,21 @@ import { theme } from '../../../theme/theme';
 import DetailSideBarContentColumn from './DetailSideBarContentColumn';
 import DetailSideBarHeader from '../../molecules/Forecast/DetailSideBarHeader';
 import DetailSideBarSummary from '../../molecules/Forecast/DetailSideBarSummary';
-import {
-    convertToIconName,
-    covertToWeatherByIconName,
-} from '../../../utils/utils';
+import type { SideBarProps } from '../../../features/forecast/types/forecast.types';
 
 interface PropsState {
-    type: string;
-    courseAltitude?: number;
+    sidebarData: SideBarProps;
     onClose: () => void;
-    card: {
-        data: CardData;
-        backgroundType?: Background;
-        title?: string;
-        courseAltitude?: number;
-    } | null;
-}
-
-interface CardData {
-    dateTime: string;
-    hikingActivity: HikingActivityStatus;
-    temperature: number;
-    apparentTemperature: number;
-    temperatureDescription: string;
-    precipitation: string;
-    probabilityDescription: string;
-    precipitationType: string;
-    sky: string;
-    skyDescription: string;
-    windSpeed: number;
-    windSpeedDescription: string;
-    humidity: number;
-    humidityDescription: string;
-    highestTemperature: number;
-    lowestTemperature: number;
-    title?: string;
 }
 
 type Background = 'sunny' | 'cloudy' | 'snow' | 'rain';
-type HikingActivityStatus = '좋음' | '매우 좋음' | '나쁨' | '약간 나쁨';
 
 const { colors } = theme;
 
 export default function WeatherDetailSideBar({
-    type,
-    courseAltitude,
+    sidebarData,
     onClose,
-    card,
 }: PropsState) {
-    if (!card) return null;
-
     const {
         apparentTemperature,
         temperatureDescription,
@@ -67,7 +32,8 @@ export default function WeatherDetailSideBar({
         hikingActivity,
         temperature,
         precipitationType,
-    } = card.data;
+        title,
+    } = sidebarData.data;
 
     const weatherDetailContentData = {
         apparentTemperature,
@@ -83,30 +49,20 @@ export default function WeatherDetailSideBar({
         precipitationType,
     };
 
-    const convertedIconName = convertToIconName({
-        precipitationType,
-        sky,
-    });
-
-    const backgroundType: Background =
-        covertToWeatherByIconName(convertedIconName);
-
     return (
-        <div css={wrapperStyles(backgroundType)}>
+        <div css={wrapperStyles(sidebarData.backgroundType)}>
             <div css={topSectionStyles}>
                 <DetailSideBarHeader
-                    courseAltitude={courseAltitude}
+                    courseAltitude={sidebarData.courseAltitude}
                     onClose={onClose}
-                    type={type}
+                    type={title!}
                 />
                 <DetailSideBarSummary
                     temperature={temperature}
                     hikingActivity={hikingActivity}
                 />
             </div>
-            <DetailSideBarContentColumn
-                weatherDetailContentData={weatherDetailContentData}
-            />
+            <DetailSideBarContentColumn {...weatherDetailContentData} />
         </div>
     );
 }

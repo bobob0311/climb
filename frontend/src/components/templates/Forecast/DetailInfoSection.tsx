@@ -17,7 +17,6 @@ import {
     getRecommendComment,
 } from '../../../features/forecast/helpers.ts';
 
-import type { SideBarProps } from '../../../features/forecast/types/forecast.types';
 import useDetailData from '../../../features/forecast/hooks/useDetailData.ts';
 import useDetailControls from '../../../features/forecast/hooks/useDetailInfoControls.ts';
 import CommonPendingModal from '../../molecules/Modal/CommonPending.tsx';
@@ -75,23 +74,21 @@ export default function DetailInfoSection() {
                     recommendComment={recommendComment}
                 />
                 <WeatherCardGroup
-                    weatherDataObjs={{
+                    cards={{
                         startCard,
                         arrivalCard,
                         descentCard,
                         adjustedArrivalCard,
                     }}
-                    isToggleOn={selection.isAdjustMode}
+                    isAdjustMode={selection.isAdjustMode}
                     courseAltitude={courseAltitude}
-                    onSidebar={(sidebarData: SideBarProps) =>
-                        sidebar.open(sidebarData)
-                    }
+                    onSidebar={sidebar.open}
                 />
 
                 <TimeSeletor
                     scrollSelectedTime={selection.scrollTime}
-                    onToggle={selection.toggleAdjustMode}
-                    isToggleOn={selection.isAdjustMode}
+                    onToggleAdjustMode={selection.toggleAdjustMode}
+                    isAdjustMode={selection.isAdjustMode}
                     time={displayDuration}
                     selectedMountainId={selectedMountainId}
                     onTimeSelect={(time) => selection.setScrollTime(time)}
@@ -99,10 +96,8 @@ export default function DetailInfoSection() {
             </div>
             {sidebar.isOpen && (
                 <WeatherDetailSideBar
-                    courseAltitude={sidebar.data?.courseAltitude}
-                    type={sidebar.data?.title!}
+                    sidebarData={sidebar.data!}
                     onClose={sidebar.close}
-                    card={sidebar.data}
                 />
             )}
             {card.isOpen && (
