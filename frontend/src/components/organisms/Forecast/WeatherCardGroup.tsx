@@ -2,99 +2,88 @@ import { css } from '@emotion/react';
 import { WeatherIndexLight } from '../../atoms/Text/WeatherIndex';
 import WeatherCard from './WeatherCard';
 import svg from '../../../assets/line.svg';
+import type {
+    SideBarProps,
+    CardData,
+} from '../../../features/forecast/types/forecast.types';
 
 interface PropsState {
-    weatherDataObjs: {
-        startCard: WeatherData;
-        arrivalCard: WeatherData;
-        descentCard: WeatherData;
-        adjustedArrivalCard: WeatherData;
+    cards: {
+        startCard: CardData;
+        arrivalCard: CardData;
+        descentCard: CardData;
+        adjustedArrivalCard: CardData;
     };
-    isToggleOn: boolean;
+    isAdjustMode: boolean;
     courseAltitude: number;
-    onSidebar: (
-        backgroundType: Background,
-        title: string,
-        courseAltitude: number,
-        data: WeatherData,
-    ) => void;
+    onSidebar: (data: SideBarProps) => void;
 }
 
-interface WeatherData {
-    dateTime: string;
-    hikingActivity: HikingActivityStatus;
-    temperature: number;
-    apparentTemperature: number;
-    temperatureDescription: string;
-    precipitation: string;
-    probabilityDescription: string;
-    precipitationType: string;
-    sky: string;
-    skyDescription: string;
-    windSpeed: number;
-    windSpeedDescription: string;
-    humidity: number;
-    humidityDescription: string;
-    highestTemperature: number;
-    lowestTemperature: number;
-    title?: string;
-}
+function getWeatherCards(
+    cards: PropsState['cards'],
+    isAdjustMode: boolean,
+    courseAltitude: number,
+) {
+    const selectedArrivalCard = isAdjustMode
+        ? cards.adjustedArrivalCard
+        : cards.arrivalCard;
 
-type HikingActivityStatus = '좋음' | '매우 좋음' | '나쁨' | '약간 나쁨';
-type Background = 'sunny' | 'cloudy' | 'snow' | 'rain';
+    return [
+        { ...cards.startCard, title: '시작지점', altitude: undefined },
+        { ...selectedArrivalCard, title: '최고점', altitude: courseAltitude },
+        { ...cards.descentCard, title: '끝지점', altitude: undefined },
+    ];
+}
 
 export default function WeatherCardGroup({
     courseAltitude,
     onSidebar,
-    isToggleOn,
-    weatherDataObjs,
+    isAdjustMode,
+    cards,
 }: PropsState) {
-    const { startCard, arrivalCard, descentCard, adjustedArrivalCard } =
-        weatherDataObjs;
+    const weatherCardList = getWeatherCards(
+        cards,
+        isAdjustMode,
+        courseAltitude,
+    );
 
-    const selectedArrivalCard = isToggleOn ? adjustedArrivalCard : arrivalCard;
-    const weatherDataList = [
-        { ...startCard, title: '시작지점' },
-        { ...selectedArrivalCard, title: '최고점' },
-        { ...descentCard, title: '끝지점' },
-    ];
     return (
         <div css={weatherSummaryWrapperStyles}>
             <div css={weatherCardWrapperStyles}>
-                {weatherDataList.map((data, index) => {
+                {weatherCardList.map((card, index) => {
                     const {
                         sky,
                         windSpeed,
                         skyDescription,
                         temperature,
                         precipitationType,
-                    } = data;
+                        altitude,
+                        title,
+                    } = card;
                     return (
                         <WeatherCard
-                            key={index}
-                            title={data.title!}
+                            key={title}
+                            title={title}
                             weatherIconName={sky}
-                            courseAltitude={
-                                index === 1 ? courseAltitude : undefined
-                            }
+                            courseAltitude={altitude}
                             weatherIconText={skyDescription}
                             windSpeed={windSpeed}
                             temperature={temperature}
                             precipitationType={precipitationType}
                             onClick={(backgroundType, title, courseAltitude) =>
-                                onSidebar(
+                                onSidebar({
                                     backgroundType,
                                     title,
-                                    courseAltitude!,
-                                    data,
-                                )
+                                    courseAltitude,
+                                    data: card,
+                                })
                             }
                         />
                     );
                 })}
             </div>
             <img css={lineImageStyles} src={svg} />
-            <WeatherIndexLight type={weatherDataList[0].hikingActivity} />
+            <WeatherIndexLight type={weatherCardList[0].hikingActivity} />
         </div>
     );
 }
