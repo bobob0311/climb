@@ -21,6 +21,20 @@ export interface CardData {
     title?: string;
 }
 
+export type WeatherDetailContentData = Pick<
+    CardData,
+    | 'apparentTemperature'
+    | 'temperatureDescription'
+    | 'precipitation'
+    | 'probabilityDescription'
+    | 'sky'
+    | 'skyDescription'
+    | 'windSpeed'
+    | 'windSpeedDescription'
+    | 'humidity'
+    | 'humidityDescription'
+    | 'precipitationType'
+>;
 export interface SideBarProps {
     backgroundType: Background;
     title: string;
