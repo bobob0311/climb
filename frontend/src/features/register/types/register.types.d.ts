@@ -35,3 +35,24 @@ export interface RegisterConfirmationRefs {
     confirmedNicknameRef: MutableRefObject<string>;
     checkBoxValidRef: MutableRefObject<boolean>;
 }
+
+export type RegisterInputRefKey =
+    | 'idRef'
+    | 'passwordRef'
+    | 'passwordConfirmRef'
+    | 'nicknameRef';
+
+export interface RegisterInputFieldConfig {
+    key: RegisterInputRefKey;
+    id: string;
+    icon: string;
+    label: string;
+    type: 'text' | 'password';
+    iconAriaLabel: string;
+    onIconClick: (ref: React.RefObject<HTMLInputElement>) => void;
+    validations?: (value: string) => string | null;
+}
+
+export interface RegisterInputField extends RegisterInputFieldConfig {
+    inputRef: React.RefObject<HTMLInputElement>;
+}
