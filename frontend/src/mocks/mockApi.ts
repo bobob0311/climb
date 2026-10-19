@@ -3,11 +3,19 @@ const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 type QueryParams = Record<string, unknown>;
 
-const nowIsoHour = () => {
-  const now = new Date();
-  now.setMinutes(0, 0, 0);
-  return now.toISOString().slice(0, 19);
+const formatLocalDateTime = (date: Date) => {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
 };
+
+const getStartDate = (value: unknown) => {
+  const date = typeof value === 'string' ? new Date(value) : new Date();
+  date.setMinutes(0, 0, 0);
+  return date;
+};
+
+const nowIsoHour = () => formatLocalDateTime(getStartDate(undefined));
+const COURSE_DURATION_HOURS = 3.4;
 
 const mountainCards = [
   {
@@ -149,19 +157,39 @@ export function getMockResponse(url: string, method: HttpMethod, params: QueryPa
   if (url === '/card/mountain' && method === 'GET') return mountainCards;
   if (url.startsWith('/card/mountain/') && url.endsWith('/course')) return [{ courseId: 101, courseName: '백운대 코스' }, { courseId: 102, courseName: '숨은벽 코스' }];
   if (url.startsWith('/card/mountain/') && url.endsWith('/forecast')) {
-    return Array.from({ length: 14 }, (_, hour) => ({
-      dateTime: new Date(Date.now() + hour * 3600000).toISOString(),
+    const startDate = getStartDate(params.startDateTime);
+    return Array.from({ length: 72 }, (_, hour) => ({
+      dateTime: formatLocalDateTime(new Date(startDate.getTime() + hour * 3600000)),
       temperature: 15 + (hour % 7),
       precipitationType: 'NONE',
       sky: hour % 4 === 0 ? 'CLOUDY' : 'SUNNY',
     }));
   }
-  if (url.startsWith('/card/course/') && url.endsWith('/forecast')) return courseForecast;
+  if (url.startsWith('/card/course/') && url.endsWith('/forecast')) {
+    const startDate = getStartDate(params.startDateTime);
+    const cardAt = (card: typeof courseForecast.startCard, hours: number) => {
+      const date = new Date(startDate.getTime() + hours * 3600000);
+      const temperatureChange = Math.round(3 * Math.sin((date.getHours() - 8) * Math.PI / 12));
+      return {
+        ...card,
+        dateTime: formatLocalDateTime(date),
+        temperature: card.temperature + temperatureChange,
+        apparentTemperature: card.apparentTemperature + temperatureChange,
+      };
+    };
+    return {
+      ...courseForecast,
+      startCard: cardAt(courseForecast.startCard, 0),
+      arrivalCard: cardAt(courseForecast.arrivalCard, COURSE_DURATION_HOURS),
+      adjustedArrivalCard: cardAt(courseForecast.adjustedArrivalCard, COURSE_DURATION_HOURS),
+      descentCard: cardAt(courseForecast.descentCard, COURSE_DURATION_HOURS * 2),
+    };
+  }
 
   if (url.startsWith('/card/mountain/course/') && !url.endsWith('/schedule') && method === 'GET') {
     return {
       courseImageUrl: '/images/mountain1_layer2.webp',
-      duration: 3.4, distance: 6.2, sunrise: '05:40:00', sunset: '19:10:00',
+      duration: COURSE_DURATION_HOURS, distance: 6.2, sunrise: '05:40:00', sunset: '19:10:00',
       hikingActivityStatus: '좋음', mountainName: '북한산', courseName: '백운대 코스',
       date: '2026-01-01', startTime: '07:00:00',
     };

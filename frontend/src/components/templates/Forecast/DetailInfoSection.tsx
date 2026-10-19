@@ -25,6 +25,21 @@ export default function DetailInfoSection() {
     const { selectedCourseId, selectedMountainId, selectedWeekdayId } =
         useCourseParams();
 
+    return (
+        <DetailInfoContent
+            key={`${selectedMountainId}-${selectedCourseId}-${selectedWeekdayId}`}
+            selectedCourseId={selectedCourseId}
+            selectedMountainId={selectedMountainId}
+            selectedWeekdayId={selectedWeekdayId}
+        />
+    );
+}
+
+function DetailInfoContent({
+    selectedCourseId,
+    selectedMountainId,
+    selectedWeekdayId,
+}: ReturnType<typeof useCourseParams>) {
     const { card, sidebar, selection } = useDetailControls({
         selectedWeekdayId,
     });

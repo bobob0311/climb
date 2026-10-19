@@ -37,26 +37,20 @@ export default function useApiQuery<TResponse = any>(
             localStorage.getItem('accessToken') ??
             sessionStorage.getItem('accessToken');
 
-        try {
-            const res = await fetch(`${API_BASE_URL}${url}${queryString}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-            });
+        const res = await fetch(`${API_BASE_URL}${url}${queryString}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        });
 
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.message || 'API 요청 실패');
-            }
-
-            return res.json() as Promise<TResponse>;
-        } catch (error) {
-            const mockResponse = getMockResponse(url, 'GET', params);
-            if (mockResponse != null) return mockResponse as TResponse;
-            throw error;
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || 'API 요청 실패');
         }
+
+        return res.json() as Promise<TResponse>;
     };
 
     return useQuery<

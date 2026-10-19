@@ -33,7 +33,7 @@ export function useDraggableScroll({
     };
 
     const endDrag = () => {
-        if (!scrollRef.current) return;
+        if (!isDragging || !scrollRef.current) return;
         setIsDragging(false);
 
         const container = scrollRef.current;
@@ -43,12 +43,8 @@ export function useDraggableScroll({
 
         const nearestIndex = Math.round(scrollPos / (cellWidth + gap));
 
-        const thresholdIndex = rawDataLength - timeWindow - 1;
-
-        const finalIndex =
-            thresholdIndex >= 0 && nearestIndex > thresholdIndex
-                ? thresholdIndex
-                : nearestIndex;
+        const thresholdIndex = Math.max(0, rawDataLength - timeWindow - 1);
+        const finalIndex = Math.max(0, Math.min(nearestIndex, thresholdIndex));
 
         container.scrollTo({
             left: finalIndex * (cellWidth + gap),

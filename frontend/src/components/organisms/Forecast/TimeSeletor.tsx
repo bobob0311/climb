@@ -45,7 +45,7 @@ export default function TimeSeletor({
     onTimeSelect,
     scrollSelectedTime,
 }: PropsState) {
-    const { forecastData, rawDataLength } = useForecastByTime({
+    const { forecastData, rawDataLength, isLoading, error } = useForecastByTime({
         mountainId: selectedMountainId,
     });
 
@@ -65,6 +65,20 @@ export default function TimeSeletor({
         timeWindow: timeWindow,
         rawDataLength: rawDataLength,
     });
+
+    if (isLoading || error || rawDataLength === 0) {
+        return (
+            <div css={timeSeletorStyles}>
+                <CommonText TextTag='span'>
+                    {isLoading
+                        ? '시간별 예보를 불러오는 중입니다.'
+                        : error
+                          ? '시간별 예보를 불러오지 못했습니다.'
+                          : '선택할 수 있는 시간별 예보가 없습니다.'}
+                </CommonText>
+            </div>
+        );
+    }
 
     return (
         <div css={timeSeletorStyles}>

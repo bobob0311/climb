@@ -4,7 +4,7 @@ import backgroundImg from '../../assets/bg.png';
 
 import { HeadlineHeading } from '../../components/atoms/Heading/Heading';
 import { useNavigate } from 'react-router-dom';
-import { theme } from '../../theme/theme';
+import type { Theme } from '@emotion/react';
 
 export default function NotFoundPage() {
     const navigate = useNavigate();
@@ -21,8 +21,6 @@ export default function NotFoundPage() {
         </div>
     );
 }
-
-const { colors, typography } = theme;
 
 const backgroundImgStyle = css`
     position: fixed;
@@ -48,19 +46,19 @@ const wrppaerStyles = css`
     box-sizing: border-box;
 `;
 
-const buttonStyles = css`
+const buttonStyles = (theme: Theme) => css`
     all: unset;
-    color: ${colors.grey[100]};
-    font-size: ${typography.fontSize.title};
-    font-weight: ${typography.fontWeight.bold};
+    color: ${theme.colors.grey[100]};
+    font-size: ${theme.typography.fontSize.title};
+    font-weight: ${theme.typography.fontWeight.bold};
     width: 10rem;
     height: 4rem;
     border-radius: 1rem;
-    diplay: flex;
+    display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    background-color: ${colors.status.normal.excellent};
+    background-color: ${theme.colors.status.normal.excellent};
 
     &:hover {
         opacity: 0.8;

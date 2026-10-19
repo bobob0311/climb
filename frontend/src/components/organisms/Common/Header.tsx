@@ -1,18 +1,49 @@
 import { css } from '@emotion/react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 import LogoWithNav from '../../molecules/Header/LogoWithNav';
 import IconNavList from '../../molecules/Header/IconNavList';
 import { LabelHeading } from '../../atoms/Heading/Heading';
 import Icon from '../../atoms/Icon/Icons';
 import { theme } from '../../../theme/theme';
 
+type HeaderVariant = 'default' | 'forecast' | 'solid';
+
+interface HeaderConfig {
+    variant: HeaderVariant;
+    title?: string;
+    showBackButton?: boolean;
+}
+
+function getHeaderConfig(pathname: string): HeaderConfig {
+    if (matchPath('/forecast/*', pathname)) {
+        return {
+            variant: 'forecast',
+            title: '일기 예보',
+            showBackButton: true,
+        };
+    }
+
+    if (matchPath('/alert/*', pathname) || matchPath('/login/*', pathname)) {
+        return {
+            variant: 'solid',
+        };
+    }
+
+    return {
+        variant: 'default',
+    };
+}
+
 export default function Header() {
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const headerConfig = getHeaderConfig(location.pathname);
+
     const isForecastPage = location.pathname.includes('/forecast');
     const isBackgroundPage = ['/alert', '/login'].some((path) =>
         location.pathname.includes(path),
     );
-    const navigate = useNavigate();
 
     return (
         <header css={headerStyles(isForecastPage, !isBackgroundPage)}>
